@@ -99,7 +99,7 @@ class color:
 
     @staticmethod
     def bw_image(input_path, output_path):
-        # command ffmpeg -i input -vf format=gray output
+        # command: ffmpeg -i input -vf format=gray output
         command = ['ffmpeg', '-i', input_path,'-vf', f'format=gray', output_path]
         subprocess.run(command) 
 
