@@ -1,7 +1,7 @@
 from PIL import Image    
 import numpy as np
 
-
+# EXERCISE 2
 class color:
 
     def __init__(self, x, y, z):  
@@ -22,18 +22,6 @@ class color:
         self.z = 1.164 * (Y-16) + 2.018 * (U-128)
 
         return color(self.x, self.y, self.z)
-    
-    
-class image:
-    
-    def __init__(self, file_path):  
-        self.file_path = file_path
-        self.image = Image.open(file_path)
-
-    def resize(self, height, width):
-        resized_image = self.image.resize((width, height))
-        resized_image.save('resized_image.jpg')
-        return resized_image
 
 RGB_color = color(0, 0, 255)
 
@@ -44,6 +32,20 @@ print("YUV color:", YUV_color.x, YUV_color.y, YUV_color.z)
 # Convert YUV back to RGB
 RGB_color = YUV_color.yuv_to_rgb(YUV_color.x, YUV_color.y, YUV_color.z)
 print("RGB Color:", RGB_color.x, RGB_color.y, RGB_color.z)
+    
+
+# EXERCISE 3
+
+class image:
+    
+    def __init__(self, file_path):  
+        self.file_path = file_path
+        self.image = Image.open(file_path)
+
+    def resize(self, height, width):
+        resized_image = self.image.resize((width, height))
+        resized_image.save('resized_image.jpg')
+        return resized_image
 
 cat = image('olivia.jpg')
 resize_cat = cat.resize(500,500)
