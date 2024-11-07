@@ -102,8 +102,30 @@ class color:
         # command: ffmpeg -i input -vf format=gray output
         command = ['ffmpeg', '-i', input_path,'-vf', f'format=gray', output_path]
         subprocess.run(command) 
+    
+    @staticmethod
+    def rl_encoding(bytes):
 
+        # initializing variables
+        encoded_bytes = []
+        current_byte = bytes[0]
+        count = 0
 
+        #loop for every byte in our serie
+        for byte in bytes:
+            
+            if byte == current_byte:
+                count += 1
+            else:
+                encoded_bytes.append((current_byte, count))
+                current_byte = byte
+                count = 1
+    
+        # Add the final byte
+        encoded_bytes.append((current_byte, count))
+        return encoded_bytes
+
+            
 ## CODE IMPLEMENTATION
 RGB_color = color(0, 0, 255)
 
@@ -123,6 +145,10 @@ print('\n')
 serpentine_olivia = color.serpentine('olivia_resized.png')
 print(serpentine_olivia)
 
-# EXERCICE 5
+# EXERCICE 5.1
 color.bw_image('olivia.jpg', 'olivia_bw.png')
 print('\n')
+
+# EXERCICE 5.1
+encoded_message= color.rl_encoding([5,0,0,0,5,6,6,6,7,7,8])
+print(encoded_message)
