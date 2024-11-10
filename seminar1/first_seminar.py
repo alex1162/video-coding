@@ -127,12 +127,12 @@ class color:
 
             
 ## CODE IMPLEMENTATION
-RGB_color = color(0, 0, 255)
 
+# EXERCISE 1
+RGB_color = color(0, 0, 255)
 # Convert RGB to YUV
 YUV_color = RGB_color.rbg_to_yuv(RGB_color.x, RGB_color.y, RGB_color.z)
 print("YUV color:", YUV_color.x, YUV_color.y, YUV_color.z)
-
 # Convert YUV back to RGB
 RGB_color = YUV_color.yuv_to_rgb(YUV_color.x, YUV_color.y, YUV_color.z)
 print("RGB Color:", RGB_color.x, RGB_color.y, RGB_color.z)
@@ -149,6 +149,6 @@ print(serpentine_olivia)
 color.bw_image('olivia.jpg', 'olivia_bw.png')
 print('\n')
 
-# EXERCICE 5.1
+# EXERCICE 5.2
 encoded_message= color.rl_encoding([5,0,0,0,5,6,6,6,7,7,8])
 print(encoded_message)
