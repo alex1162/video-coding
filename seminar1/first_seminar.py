@@ -149,6 +149,11 @@ print(serpentine_olivia)
 color.bw_image('olivia.jpg', 'olivia_bw.png')
 print('\n')
 
-# EXERCICE 5.1
-encoded_message= color.rl_encoding([5,0,0,0,5,6,6,6,7,7,8])
-print(encoded_message)
+# EXERCICE 5.2
+encoded_serie= color.rl_encoding([5,0,0,0,5,6,6,6,7,7,8])
+print(encoded_serie)
+
+from decoder import PyCoefficientDecoder, JDctMethod
+filename = 'olivia.jpg'
+d = PyCoefficientDecoder(filename, dct_method=JDctMethod.JDCT_FLOAT)
+img = d.get_decompressed_image()
