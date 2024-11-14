@@ -3,79 +3,130 @@ import subprocess
 import numpy as np
 from PIL import Image
 import cv2
+import pywt
+import unittest
+
 
 class Color:
     def __init__(self, x, y, z):  
         self.x = x
         self.y = y
         self.z = z
-
+    
+    # to change pixels from RGB to YUV
     def rgb_to_yuv(self, R, G, B):
         self.x = ((66 * R + 129 * G + 25 * B + 128) / 256) + 16
         self.y = ((-38 * R - 74 * G + 112 * B + 128) / 256) + 128
         self.z = ((112 * R - 94 * G - 18 * B + 128) / 256) + 128
         return Color(self.x, self.y, self.z)
     
+    # to change pixels from RGB to YUV
     def yuv_to_rgb(self, Y, U, V):
         self.x = 1.164 * (Y-16) + 1.596 * (V-128)
         self.y = 1.164 * (Y-16) - 0.391 * (U-128) - 0.813 * (V-128)
         self.z = 1.164 * (Y-16) + 2.018 * (U-128)
         return Color(self.x, self.y, self.z)
 
+    # we have created this method to be used later on when reading images
+    @staticmethod
+    def load_image_as_matrix(img_path):
+        image = Image.open(img_path).convert('L')
+        return np.array(image)
+
+    # resizing the image using ffmpeg command
     @staticmethod
     def resize_image(input_path, output_path, width=320, height=240):
         command = ['ffmpeg', '-i', input_path, '-vf', f'scale={width}:{height}', output_path]
         subprocess.run(command)
 
+    # turning the image to black & white using ffmpeg command
     @staticmethod
     def bw_image(input_path, output_path):
         command = ['ffmpeg', '-i', input_path, '-vf', 'format=gray', output_path]
         subprocess.run(command)
 
+    # method to do rl encoding
     @staticmethod
-    def rl_encoding(bytes_seq):
-        encoded_bytes = []
-        current_byte = bytes_seq[0]
+    def rl_encoding(values_seq):
+        encoded_values = []
+        current_byte = values_seq[0]
         count = 0
-        for byte in bytes_seq:
+        for byte in values_seq:
             if byte == current_byte:
                 count += 1
             else:
-                encoded_bytes.append((current_byte, count))
+                encoded_values.append((current_byte, count))
                 current_byte = byte
                 count = 1
-        encoded_bytes.append((current_byte, count))
-        return encoded_bytes
+        encoded_values.append((current_byte, count))
+        return encoded_values
+
+    # we have created another method to decode the rl_encoding
+    @staticmethod
+    def rl_decoding(encoded_seq):
+        decoded_seq = []
+        for value, count in encoded_seq:
+            decoded_seq.extend([value] * count)
+        return np.array(decoded_seq)
 
     @staticmethod
     def serpentine(matrix):
-        rows, cols = matrix.shape
+        # TEST WITH ARRAY:
+        # input = np.array([[1, 2, 3, 4], 
+        #      [5, 6, 7, 8],
+        #      [9, 10, 11, 12],
+        #      [13, 14, 15, 16]])
+        # 
+        # EXPECTED OUTPUT: 1 2 5 9 6 3 4 7 10 13 14 11 8 12 15 16
+
+        width, height = input.shape
+        pixels = input.flatten().tolist()
+
+        # creating matrix with pixel values
+        mat = [pixels[i * width:(i + 1) * width] for i in range(height)]
+
+        # initializing variables
+        r = 0 # rows
+        c = 0 # columns
+        m = width
+        n = height
         serpentine_pixels = []
         direction = True
-        r, c = 0, 0
 
-        for _ in range(rows * cols):
-            serpentine_pixels.append(matrix[r][c])
+        # loop for all pixels
+        for _ in range(m * n):
+            serpentine_pixels.append(mat[r][c]) # add pixel to the list
+
+            # up-right direction
             if direction:
-                if r == 0 and c != cols - 1:
+                # top row but not last col-> change direction and move right
+                if r == 0 and c != n-1:
                     direction = False
-                    c += 1
-                elif c == cols - 1:
+                    c += 1 
+                # last col-> change direction and move down
+                elif c == n-1:
                     direction = False
-                    r += 1
+                    r += 1 
+                # continue moving up-right
                 else:
-                    r -= 1
-                    c += 1
+                    r -= 1 
+                    c += 1 
+
+            # down-left direction
             else:
-                if c == 0 and r != rows - 1:
+                # first col but not las row-> change direction and move down
+                if c == 0 and r != m-1:
                     direction = True
-                    r += 1
-                elif r == rows - 1:
+                    r += 1 
+                # last row-> change direction and move right
+                elif r == m-1:
                     direction = True
-                    c += 1
+                    c += 1 
+                # continue moving down-left
                 else:
-                    r += 1
                     c -= 1
+                    r += 1 
+
         return serpentine_pixels
 
 
@@ -83,12 +134,7 @@ class DCT:
     def __init__(self, img_path, q_matrix_level):
         self.img_path = img_path
         self.q_matrix_level = q_matrix_level
-        self.image_mat = self.load_image_as_matrix(img_path)
-
-    @staticmethod
-    def load_image_as_matrix(img_path):
-        image = Image.open(img_path).convert('L')
-        return np.array(image)
+        self.image_mat = Color.load_image_as_matrix(img_path)
 
     def select_q_matrix(self, level="Q50"):
         matrices = {
@@ -119,27 +165,27 @@ class DCT:
                         [10,13,16,17,21,24,24,21],
                         [14,18,19,20,22,20,20,20]])
         }
+        
         return matrices.get(level, np.ones((8, 8)))
 
     def dct_compression(self):
         height, width = self.image_mat.shape
-        dct_transformed = np.zeros_like(self.image_mat, dtype=np.float32)
+        dct_transformed = np.zeros_like(self.image_mat, dtype=np.float32) 
         q_matrix = self.select_q_matrix(self.q_matrix_level)
-        N = 8
+        N = 8 # because we want 8x8 blocks
 
         for i in range(0, height, N):
             for j in range(0, width, N):
-                block = self.image_mat[i:i+N, j:j+N] - 128  # Center pixel values around zero
+                block = self.image_mat[i:i+N, j:j+N]   # centering pixel values around zero
                 dct_block = cv2.dct(np.float32(block))
                 quantized_block = np.round(dct_block / q_matrix).astype(int)
                 dct_transformed[i:i+N, j:j+N] = quantized_block
 
-        serpentine_order = Color.serpentine(dct_transformed)
-        encoded_data = Color.rl_encoding(serpentine_order)
+        encoded_data = Color.rl_encoding(dct_transformed.flatten())
         return encoded_data
 
     def dct_decompression(self, encoded_data):
-        decoded_data = self.rl_decoding(encoded_data)
+        decoded_data = Color.rl_decoding(encoded_data)
         height, width = self.image_mat.shape
         decompressed_image = np.zeros((height, width), dtype=np.uint8)
         q_matrix = self.select_q_matrix(self.q_matrix_level)
@@ -150,20 +196,35 @@ class DCT:
             for j in range(0, width, N):
                 quantized_block = reshaped_data[i:i+N, j:j+N]
                 dequantized_block = quantized_block * q_matrix
-                idct_block = cv2.idct(dequantized_block + 128)
+                idct_block = cv2.idct(dequantized_block) 
                 decompressed_image[i:i+N, j:j+N] = np.clip(idct_block, 0, 255)
 
         return Image.fromarray(decompressed_image)
 
-    @staticmethod
-    def rl_decoding(encoded_seq):
-        decoded_seq = []
-        for value, count in encoded_seq:
-            decoded_seq.extend([value] * count)
-        return np.array(decoded_seq)
 
+class DWT:
+    def __init__(self, img_path):
+        self.img_path = img_path
+    
+    def dwt_compression(self, img_path):
+        image = np.array(Image.open(img_path).convert('L')) # obtaining the array of values of the image in bw
+        dwt = pywt.dwt2(image, 'sym4') #coefficients
+        cA, (cH, cV, cD) = dwt
+        
+        # combining the coefficients to form a single image for visualization
+        transformed_array = np.vstack((
+            np.hstack((cA, cH)),
+            np.hstack((cV, cD))
+        ))
+        
+        return Image.fromarray(np.uint8(np.clip(transformed_array, 0, 255))), dwt
+    
+    def dwt_decompression(self, compressed_data):
+        data = pywt.idwt2(compressed_data, 'sym4')
+        
+        return Image.fromarray(np.uint8(np.clip(data, 0, 255)))
 
-# EXAMPLES OF EXERCISES
+# UNIT TESTS
 
 # Exercise 1
 rgb_color = Color(0, 0, 255)
@@ -180,17 +241,26 @@ sample_array = np.random.randint(0, 255, (8, 8))
 serpentine_result = Color.serpentine(sample_array)
 print("Serpentine Pattern:", serpentine_result)
 
-# EXERCICE 5.1
+# Exercise 5.1
 Color.bw_image('olivia_resized.png', 'olivia_bw.png')
-print('\n')
 
 # Exercise 5.2
-encoded_result = Color.rl_encoding([5, 0, 0, 0, 5, 6, 6, 6, 7, 7, 8])
+encoded_result = Color.rl_encoding(np.array([5, 0, 0, 0, 5, 6, 6, 6, 7, 7, 8]))
 print("Run-Length Encoded:", encoded_result)
+decoded_result = Color.rl_decoding(encoded_result)
+print("Run-Length Decoded:", decoded_result)
 
 # Exercise 6
 img_path = 'olivia_bw.png'
-dct_handler = DCT(img_path, 'Q50')
+dct_handler = DCT(img_path, 'Q90')
 compressed_data = dct_handler.dct_compression()
 decompressed_image = dct_handler.dct_decompression(compressed_data)
 decompressed_image.save("output_image.png")
+
+# Exercise 7
+img_path = 'olivia_bw.png'
+dwt_image = DWT(img_path)
+compressed_data = dwt_image.dwt_compression(img_path)
+compressed_data[0].save("dwt_image.png")
+decompressed_data = dwt_image.dwt_decompression(compressed_data[1])
+decompressed_data.save("idwt_image.png")
