@@ -70,7 +70,7 @@ class Color:
         return np.array(decoded_seq)
 
     @staticmethod
-    def serpentine(matrix):
+    def serpentine(input):
         # TEST WITH ARRAY:
         # input = np.array([[1, 2, 3, 4], 
         #      [5, 6, 7, 8],
