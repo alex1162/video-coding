@@ -1,0 +1,21 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY api/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+# RUN pip install fastapi[standard]
+
+# Copy API code
+# COPY api/ /app/api
+COPY api /app/api
+
+# Set the Python path to include /app
+ENV PYTHONPATH=/app
+
+# Run the API
+
+# dues maneres:
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["fastapi", "run", "api/main.py", "--port", "8000"]
