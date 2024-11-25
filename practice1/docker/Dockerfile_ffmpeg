@@ -1,14 +1,12 @@
-# Use a lightweight FFmpeg image
+# Use the lightweight FFmpeg image
 FROM jrottenberg/ffmpeg:latest
 
 # Set the working directory
-WORKDIR /shared
+WORKDIR /media
 
-# RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
-RUN apt-get update && apt-get install -y ffmpeg 
+# Expose directory for file processing (optional, depends on your setup)
+VOLUME /media
 
-# Expose a directory to process files (optional)
-# VOLUME /app/media
-
-# Default command to show FFmpeg version (replace as needed)
+# Default command (optional)
 # CMD ["ffmpeg", "-version"]
+ENTRYPOINT ["tail", "-f", "/dev/null"]

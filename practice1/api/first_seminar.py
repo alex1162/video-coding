@@ -1,11 +1,8 @@
-import os
 import subprocess   
 import numpy as np
 from PIL import Image
 import cv2
 import pywt
-import unittest
-
 
 class Color:
     def __init__(self, x, y, z):  
@@ -33,25 +30,43 @@ class Color:
         image = Image.open(img_path).convert('L')
         return np.array(image)
 
-    # resizing the image using ffmpeg command
+    # Resizing the image using ffmpeg command
     @staticmethod
-    def resize_image(input_path, output_path, width=320, height=240):
-        command = ['ffmpeg', '-i', input_path, '-vf', f'scale={width}:{height}', output_path]
-        try:
-            subprocess.run(command, check=True)
-            print(f"Image resized and saved as {output_path}")
-        except subprocess.CalledProcessError as e:
-            print(f"Failed to resize image: {e}")
+    def resize_image(input_path, output_path, width=320, height=240, docker=None):
+        # If docker is provided, use the docker command
+        if docker:
+            command = docker + ['ffmpeg', '-i', input_path, '-vf', f'scale={width}:{height}', output_path]
+            try:
+                result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                print(f"Image resized and saved as {output_path}")
+                return result.stdout, result.stderr
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to resize image: {e}")
+        else:
+            # If no docker is provided, run ffmpeg directly
+            command = ['ffmpeg', '-i', input_path, '-vf', f'scale={width}:{height}', output_path]
+            subprocess.run(command)
+        
 
-    # turning the image to black & white using ffmpeg command
+
+    # Turning the image to black & white using ffmpeg command
     @staticmethod
-    def bw_image(input_path, output_path):
-        command = ['ffmpeg', '-i', input_path, '-vf', 'format=gray', output_path]
-        try:
-            subprocess.run(command, check=True)
-            print(f"Image converted to bw and saved as {output_path}")
-        except subprocess.CalledProcessError as e:
-            print(f"Failed to convert image: {e}")
+    def bw_image(input_path, output_path, docker=None):
+        # If docker is provided, use the docker command
+        if docker:
+            command = docker + ['ffmpeg', '-i', input_path, '-vf', 'format=gray', output_path]
+            try:
+                result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                print(f"Image turned to black & white and saved as {output_path}")
+                return result.stdout, result.stderr
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to turn image to black & white: {e}")
+        else:
+            # If no docker is provided, run ffmpeg directly
+            command = ['ffmpeg', '-i', input_path, '-vf', 'format=gray', output_path]
+            subprocess.run(command)
+        
+
 
     # method to do rl encoding
     @staticmethod
