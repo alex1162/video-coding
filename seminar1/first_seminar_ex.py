@@ -223,3 +223,44 @@ class DWT:
         data = pywt.idwt2(compressed_data, 'sym4')
         
         return Image.fromarray(np.uint8(np.clip(data, 0, 255)))
+
+# EXAMPLES
+
+# Exercise 1
+rgb_color = Color(0, 0, 255)
+yuv_color = rgb_color.rgb_to_yuv(rgb_color.x, rgb_color.y, rgb_color.z)
+print("YUV Color:", yuv_color.x, yuv_color.y, yuv_color.z)
+rgb_back = yuv_color.yuv_to_rgb(yuv_color.x, yuv_color.y, yuv_color.z)
+print("RGB Color:", rgb_back.x, rgb_back.y, rgb_back.z)
+
+# Exercise 3
+Color.resize_image('olivia.jpg', 'olivia_resized.png', 480, 320)
+
+# Exercise 4
+sample_array = np.random.randint(0, 255, (8, 8))
+serpentine_result = Color.serpentine(sample_array)
+print("Serpentine Pattern:", serpentine_result)
+
+# Exercise 5.1
+Color.bw_image('olivia_resized.png', 'olivia_bw.png')
+
+# Exercise 5.2
+encoded_result = Color.rl_encoding(np.array([5, 0, 0, 0, 5, 6, 6, 6, 7, 7, 8]))
+print("Run-Length Encoded:", encoded_result)
+decoded_result = Color.rl_decoding(encoded_result)
+print("Run-Length Decoded:", decoded_result)
+
+# Exercise 6
+img_path = 'olivia_bw.png'
+dct_handler = DCT(img_path, 'Q90')
+compressed_data = dct_handler.dct_compression()
+decompressed_image = dct_handler.dct_decompression(compressed_data)
+decompressed_image.save("output_image.png")
+
+# Exercise 7
+img_path = 'olivia_bw.png'
+dwt_image = DWT(img_path)
+compressed_data = dwt_image.dwt_compression(img_path)
+compressed_data[0].save("dwt_image.png")
+decompressed_data = dwt_image.dwt_decompression(compressed_data[1])
+decompressed_data.save("idwt_image.png")
