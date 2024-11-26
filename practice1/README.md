@@ -5,11 +5,11 @@ This is a brief manual on how we have performed each task of the practice and th
 **1. Start a new project called practice1. Create an API and put it inside a docker.**
 
 To do this practice we will use FastAPI. We will start following the instructions from the fastapi website tutorial. 
-We start by installing fastapi. We do so running the command:
+We start by installing fastapi. We do so by running the command:
 
 *> pip install “fastapi[standard]”*
 
-We then proceed creating a new project folder in our directory called practice1.
+We then proceed to create a new project folder in our directory called practice1.
 
 Here we will **create** a virtual environment:
 
@@ -35,14 +35,14 @@ Instead of using the python file from seminar 1, we duplicate it and bring it to
 We have created the *main.py* file, which defines a FastAPI application with several endpoints. The API includes a home route that serves a simple HTML page with a link to the API documentation. We have added two color conversion endpoints: one for converting RGB values to YUV (/rgb-to-yuv/) and another for converting YUV back to RGB (/yuv-to-rgb/). Additionally, we added two endpoints for image processing: one for converting images to black and white (/bw-image/) and another for resizing images (/resize-image/). Both image processing endpoints work with files uploaded through the API and use Docker to run the ffmpeg container for the media manipulation.
 
 **5. Use docker-compose to launch both and make them interact (i.e., you have a method for conversion, you launch your API and it will call the FFMPEG docker)**
-We finally create the docker-compose file, which allows both the API and ffmpeg containers to communicate through shared volumes and the Docker network. By defining the api and ffmpeg services in the same docker-compose file, it automatically places them on a shared network, allowing them to access each other by their service names. The api container can execute commands (like docker exec) within the ffmpeg container, which is enabled by mounting the Docker socket (/var/run/docker.sock). This provides the api container with the necessary permissions to control Docker on the host. Finally, as mentioned previously, the shared /media volume ensures that both containers have access to the same media files, enabling file transfers and manipulation between the services. 
+We finally create the docker-compose file, which allows both the API and ffmpeg containers to communicate through shared volumes and the Docker network. By defining the api and ffmpeg services in the same docker-compose file, it automatically places them on a shared network, allowing them to access each other by their service names. The api container can execute commands (like docker exec) within the ffmpeg container, which is enabled by mounting the Docker socket (/var/run/docker.sock). This provides the api container with the necessary permissions to control Docker on the host. Finally, as mentioned previously, the shared /media volume ensures both containers have access to the same media files, enabling file transfers and manipulation between the services. 
 
 To launch the application, after creating the virtual environment (described in 1.), we run the following command to build the docker-compose file: 
 
 *> docker-compose up --build*
 
-It's important to have installed the docker desktop app in our computer and keep the program oppened when running this command. We then can acces the application through our browser, using the URL: *localhost:8000*
+It's important to have installed the docker desktop app on our computer and keep the program opened when running this command. We then can access the application through our browser, using the URL: *localhost:8000*
 
 **(*)IMPORTANT:**
-If using **pytest** (pip install pytest), import using adding a dot before importing the file: import .first_seminar or import .main
+If using **pytest** (pip install pytest), import by adding a dot before importing the file: import .first_seminar or import .main
 If just running with python first_seminar_test.py or test_main.py, remove the dot: import first_seminar or import main
