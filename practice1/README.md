@@ -18,6 +18,7 @@ Here we will **create** a virtual environment:
 And then **activate** it:
 
 *> .venv\Scripts\activate (windows, PowerShell)*
+
 *> source .venv/bin/activate (linux)*
 
 Finally, we create a dockerfile. We will call it *Dockerfile_api* and it will contain the necessary information to run the api. We store it in a subfolder called *docker*, which will contain related files. 
