@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from PIL import Image
-from first_seminar import Color, DCT, DWT
+from .first_seminar import Color, DCT, DWT
 
 
 class TestColorMethods(unittest.TestCase):
@@ -35,7 +35,7 @@ class TestColorMethods(unittest.TestCase):
 
     def test_resize(self):
         input_path = '../media/olivia.jpg'
-        output_path = '../media/olivia_resized.jpg'
+        output_path = '../media/resized_olivia.jpg'
         # Resize the image to 40x40 pixels
         Color.resize_image(input_path, output_path, 40, 40)
         # Verify
@@ -54,7 +54,7 @@ class TestColorMethods(unittest.TestCase):
     
 class TestDCTMethods(unittest.TestCase):
     def setUp(self):
-        self.img_path = '../media/olivia_resized.jpg'
+        self.img_path = '../media/resized_olivia.jpg'
         self.dct_handler = DCT(self.img_path, 'Q50')
         self.image_array = Color.load_image_as_matrix(self.img_path)
 

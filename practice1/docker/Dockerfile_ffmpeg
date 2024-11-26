@@ -1,12 +1,11 @@
-# Use the lightweight FFmpeg image
+# using the lightweight FFmpeg image
 FROM jrottenberg/ffmpeg:latest
 
-# Set the working directory
+# setting the working directory
 WORKDIR /media
 
-# Expose directory for file processing (optional, depends on your setup)
+# exposing directory for file processing
 VOLUME /media
 
-# Default command (optional)
-# CMD ["ffmpeg", "-version"]
-ENTRYPOINT ["tail", "-f", "/dev/null"]
+# running the docker container in the backround
+ENTRYPOINT ["tail", "-f", "/dev/null"] 

@@ -1,9 +1,6 @@
 from fastapi import FastAPI, UploadFile
 from fastapi.responses import HTMLResponse
-from typing import Union
-from pathlib import Path
 from api.first_seminar import Color, DCT, DWT
-import subprocess
 
 app = FastAPI()
 
