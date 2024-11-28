@@ -6,11 +6,11 @@ RUN apt-get update && apt-get install -y docker.io
 WORKDIR /app
 
 # installing dependencies
-COPY api/requirements.txt .
+COPY ../api/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # copying API code
-COPY api /app/api
+COPY ../api /app/api
 
 # setting the Python path to include /app
 ENV PYTHONPATH=/app

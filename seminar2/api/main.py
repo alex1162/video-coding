@@ -16,7 +16,7 @@ def home():
             <title>Home</title>
         </head>
         <body>
-            <h1>Practice 1 - API & Dockerization</h1>
+            <h1>Seminar2 - MPEPG4 and more endpoints</h1>
             <p> To test the endpoints implemented, go to the API docs page:</p>
             <button onclick="window.location.href='/docs';">Go</button>
         </body>
@@ -55,3 +55,32 @@ async def resize_image(file: UploadFile, width: int, height: int):
     docker = ["docker", "exec", "docker-ffmpeg"]
     Color.resize_image(input_path, output_path, width, height, docker)
     return {"status": "success", "output_file": output_path}
+    
+@app.post("/modify-resolution/")
+	def modify_resolution(file: UploadFile, width: int, height: int):
+    input_path = f"{MEDIA_FOLDER}/{file.filename}"
+    output_path = f"{MEDIA_FOLDER}/resized_{file.filename}"
+
+    # Resize the image
+    docker = ["docker", "exec", "docker-ffmpeg"]
+    if docker:
+            command = docker + ['ffmpeg', '-i', input_path, '-vf', f'scale={width}:{height}', output_path]
+            try:
+                result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                print(f"Image resized and saved as {output_path}")
+                return result.stdout, result.stderr
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to resize image: {e}")
+        else:
+            # If no docker is provided, run ffmpeg directly
+            command = ['ffmpeg', '-i', input_path, '-vf', f'scale={width}:{height}', output_path]
+            subprocess.run(command)
+    
+    return {"status": "success", "output_file": output_path}
+    
+    
+    
+    
+    
+    
+    
