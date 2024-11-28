@@ -1,0 +1,11 @@
+# using the lightweight FFmpeg image
+FROM jrottenberg/ffmpeg:latest
+
+# setting the working directory
+WORKDIR /media
+
+# exposing directory for file processing
+VOLUME /media
+
+# running the docker container in the backround
+ENTRYPOINT ["tail", "-f", "/dev/null"] 

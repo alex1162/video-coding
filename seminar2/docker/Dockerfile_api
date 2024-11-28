@@ -1,0 +1,22 @@
+FROM python:3.9-slim
+
+# installing Docker CLI
+RUN apt-get update && apt-get install -y docker.io
+
+WORKDIR /app
+
+# installing dependencies
+COPY api/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# copying API code
+COPY api /app/api
+
+# setting the Python path to include /app
+ENV PYTHONPATH=/app
+
+# exposing the API port
+EXPOSE 8000
+
+# running the API
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
