@@ -1,6 +1,7 @@
 from fastapi import FastAPI, UploadFile
 from fastapi.responses import HTMLResponse
 from api.first_seminar import Color, DCT, DWT
+import subprocess
 
 app = FastAPI()
 
@@ -55,27 +56,28 @@ async def resize_image(file: UploadFile, width: int, height: int):
     docker = ["docker", "exec", "docker-ffmpeg"]
     Color.resize_image(input_path, output_path, width, height, docker)
     return {"status": "success", "output_file": output_path}
-    
-@app.post("/modify-resolution/")
-	def modify_resolution(file: UploadFile, width: int, height: int):
+
+@app.post("/modify-chroma-subsampling/")
+def modify_chroma_subsampling(file: UploadFile, Y: int, Cb: int, Cr: int):
     input_path = f"{MEDIA_FOLDER}/{file.filename}"
     output_path = f"{MEDIA_FOLDER}/resized_{file.filename}"
 
     # Resize the image
     docker = ["docker", "exec", "docker-ffmpeg"]
     if docker:
-            command = docker + ['ffmpeg', '-i', input_path, '-vf', f'scale={width}:{height}', output_path]
-            try:
-                result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                print(f"Image resized and saved as {output_path}")
-                return result.stdout, result.stderr
-            except subprocess.CalledProcessError as e:
-                print(f"Failed to resize image: {e}")
-        else:
-            # If no docker is provided, run ffmpeg directly
-            command = ['ffmpeg', '-i', input_path, '-vf', f'scale={width}:{height}', output_path]
-            subprocess.run(command)
-    
+        # ffmpeg -i input.mp4 -c:v libx264 -vf format=yuv420p output.mp4
+        command = docker + ['ffmpeg', '-i', input_path, '-c:v', 'libx264', '-vf', f'format=yuv{Y}{Cb}{Cr}p', output_path]
+        try:
+            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            print(f"Image resized and saved as {output_path}")
+            return result.stdout, result.stderr
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to resize image: {e}")
+    else:
+        # If no docker is provided, run ffmpeg directly
+        command = ['ffmpeg', '-i', input_path, '-c:v', 'libx264', '-vf', f'format={Y}{Cb}{Cr}p', output_path]
+        subprocess.run(command)
+
     return {"status": "success", "output_file": output_path}
     
     

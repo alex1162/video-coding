@@ -37,8 +37,9 @@ We have created the *main.py* file, which defines a FastAPI application with sev
 **5. Use docker-compose to launch both and make them interact (i.e., you have a method for conversion, you launch your API and it will call the FFMPEG docker)**
 We finally create the docker-compose file, which allows both the API and ffmpeg containers to communicate through shared volumes and the Docker network. By defining the api and ffmpeg services in the same docker-compose file, it automatically places them on a shared network, allowing them to access each other by their service names. The api container can execute commands (like docker exec) within the ffmpeg container, which is enabled by mounting the Docker socket (/var/run/docker.sock). This provides the api container with the necessary permissions to control Docker on the host. Finally, as mentioned previously, the shared /media volume ensures both containers have access to the same media files, enabling file transfers and manipulation between the services. 
 
-To launch the application, after creating the virtual environment (described in 1.), we run the following command to build the docker-compose file: 
+To launch the application, after creating the virtual environment (described in 1.), we run the following command to build the docker-compose file inside the docker folder: 
 
+*> cd .\docker*
 *> docker-compose up --build*
 
 It's important to have installed the docker desktop app on our computer and keep the program opened when running this command. We then can access the application through our browser, using the URL: *localhost:8000*
