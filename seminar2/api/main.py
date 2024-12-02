@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile
 from fastapi.responses import HTMLResponse
 from api.first_seminar import Color, DCT, DWT
 import subprocess
+import json
 
 app = FastAPI()
 
@@ -79,8 +80,40 @@ def modify_chroma_subsampling(file: UploadFile, Y: int, Cb: int, Cr: int):
         subprocess.run(command)
 
     return {"status": "success", "output_file": output_path}
+ 
+
+@app.post("/video-information/")
+def get_video_information(file: UploadFile):
+    input_path = f"{MEDIA_FOLDER}/{file.filename}"
     
-    
+    docker = ["docker", "exec", "docker-ffmpeg"]
+    if docker:
+    # Command to extract video metadata using ffprobe
+        command = docker + [ "ffprobe", "-v", "error", "-show_entries", "format=duration,size,bit_rate", "-show_streams", "-select_streams", "v:0",
+            "-print_format", "json", input_path]
+        try:
+            # Run the ffprobe command and capture the output
+            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            metadata = result.stdout  
+
+            video_info = json.loads(metadata)
+            format_info = video_info.get("format", {})
+            stream_info = video_info.get("streams", [])[0]  # First video stream
+
+            # Extract relevant details
+            extracted_info = {
+                "duration": float(format_info.get("duration", 0)),
+                "size": int(format_info.get("size", 0)),
+                "bit_rate": int(format_info.get("bit_rate", 0)),
+                "resolution": f'{stream_info.get("width", "unknown")}x{stream_info.get("height", "unknown")}',
+                "frame_rate": eval(stream_info.get("avg_frame_rate", "0/1")),  # Convert "30/1" to 30
+            }
+
+            return {"status": "success", "video_info": extracted_info}
+
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+
     
     
     
