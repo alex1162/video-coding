@@ -2,14 +2,9 @@
 
 This is a brief manual on how we have performed each task of the practice and the steps to follow to prove its functionality.
 
-**1. Start a new project called practice1. Create an API and put it inside a docker.**
+**1.Create a new endpoint/feature which will let you to modify the resolution (use FFmpeg in the backend).**
 
-To do this practice we will use FastAPI. We will start following the instructions from the fastapi website tutorial. 
-We start by installing fastapi. We do so by running the command:
-
-*> pip install “fastapi[standard]”*
-
-We then proceed to create a new project folder in our directory called practice1.
+To do this practice we will use the previous practice 1. In this exercice we will use the already created function resize_image with some modifications in order to work.
 
 Here we will **create** a virtual environment:
 
@@ -20,10 +15,6 @@ And then **activate** it:
 *> .venv\Scripts\activate (windows, PowerShell)*
 
 *> source .venv/bin/activate (linux)*
-
-Finally, we create a dockerfile. We will call it *Dockerfile_api* and it will contain the necessary information to run the api. We store it in a subfolder called *docker*, which will contain related files. 
-
-We later added a requirements.txt file which contains the libraries that need to be installed in order to run the project. This file is stored in the *api* folder, which is described later on.
 
 **2. Put ffmpeg inside a Docker**
 We create a new dockerfile called Dockerfile_ffmpeg. We get ffmpeg from *jrottenberg/ffmpeg:latest*, which already prepares a minimalist Docker image with FFmpeg. As we will need to run continuously this docker in the background (to be able to call the functions that depend on it), we add a command to do so. We also add the directory of the media folder, which will be shared with the api docker and will be used to store the media we will use. 

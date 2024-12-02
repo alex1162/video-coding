@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse
 from api.first_seminar import Color, DCT, DWT
 import subprocess
 import json
+import os
 
 app = FastAPI()
 
@@ -63,13 +64,12 @@ def modify_chroma_subsampling(file: UploadFile, Y: int, Cb: int, Cr: int):
     input_path = f"{MEDIA_FOLDER}/{file.filename}"
     output_path = f"{MEDIA_FOLDER}/resized_{file.filename}"
 
-    # Resize the image
     docker = ["docker", "exec", "docker-ffmpeg"]
     if docker:
         # ffmpeg -i input.mp4 -c:v libx264 -vf format=yuv420p output.mp4
         command = docker + ['ffmpeg', '-i', input_path, '-c:v', 'libx264', '-vf', f'format=yuv{Y}{Cb}{Cr}p', output_path]
         try:
-            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             print(f"Image resized and saved as {output_path}")
             return result.stdout, result.stderr
         except subprocess.CalledProcessError as e:
@@ -81,24 +81,22 @@ def modify_chroma_subsampling(file: UploadFile, Y: int, Cb: int, Cr: int):
 
     return {"status": "success", "output_file": output_path}
  
-
 @app.post("/video-information/")
 def get_video_information(file: UploadFile):
     input_path = f"{MEDIA_FOLDER}/{file.filename}"
     
     docker = ["docker", "exec", "docker-ffmpeg"]
     if docker:
-    # Command to extract video metadata using ffprobe
+    # Command using ffprobe
         command = docker + [ "ffprobe", "-v", "error", "-show_entries", "format=duration,size,bit_rate", "-show_streams", "-select_streams", "v:0",
             "-print_format", "json", input_path]
         try:
-            # Run the ffprobe command and capture the output
+            # Run the command and capture the output
             result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            metadata = result.stdout  
 
-            video_info = json.loads(metadata)
-            format_info = video_info.get("format", {})
-            stream_info = video_info.get("streams", [])[0]  # First video stream
+            metadata = json.loads(result.stdout)
+            format_info = metadata.get("format", {})
+            stream_info = metadata.get("streams", [])[0]  # First video stream
 
             # Extract relevant details
             extracted_info = {
@@ -111,11 +109,94 @@ def get_video_information(file: UploadFile):
 
             return {"status": "success", "video_info": extracted_info}
 
-        except Exception as e:
+        except subprocess.CalledProcessError as e:
             return {"status": "error", "message": str(e)}
 
+@app.post("/process-bbb/")
+def process_bbb(file: UploadFile):
     
-    
-    
-    
-    
+    input_path = f"{MEDIA_FOLDER}/{file.filename}"
+    trimmed_video_path = f"{MEDIA_FOLDER}/trimmed_{file.filename}"
+    aac_audio_path = f"{MEDIA_FOLDER}/audio_mono.aac"
+    mp3_audio_path = f"{MEDIA_FOLDER}/audio_stereo.mp3"
+    ac3_audio_path = f"{MEDIA_FOLDER}/audio.ac3"
+    output_mp4_path = f"{MEDIA_FOLDER}/output_combined.mp4"
+
+    docker = ["docker", "exec", "docker-ffmpeg"]
+    if docker:
+        # Trim the video to 20 seconds
+        trim_command = docker + [ "ffmpeg", "-i", input_path, "-t", "20", "-c:v", "libx264", "-c:a", "aac", trimmed_video_path]
+        # Export audio as AAC mono
+        aac_command = docker + [ "ffmpeg", "-i", trimmed_video_path, "-ac", "1", "-c:a", "aac", aac_audio_path]
+        # Export audio as MP3 stereo 
+        mp3_command = docker + [ "ffmpeg", "-i", trimmed_video_path, "-ac", "2", "-b:a", "128k", "-c:a", "mp3", mp3_audio_path]
+        # Export audio as AC3 codec
+        ac3_command = docker + ["ffmpeg", "-i", trimmed_video_path, "-c:a", "ac3", ac3_audio_path]
+        # Combine the trimmed video and audio into a single file
+        combine_command = docker + ["ffmpeg", "-i", trimmed_video_path, "-i", aac_audio_path, "-map", "0:v:0", "-map", "1:a:0","-c:v", "copy", "-c:a", "aac", output_mp4_path]
+
+        try:
+            subprocess.run(trim_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+            subprocess.run(aac_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+            subprocess.run(mp3_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+            subprocess.run(ac3_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+            subprocess.run(combine_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+
+            return {"status": "success", "final_mp4": output_mp4_path }
+
+        except subprocess.CalledProcessError as e:
+            return {"status": "error", "message": str(e)}
+
+@app.post("/count-tracks/")
+def count_tracks(file: UploadFile):
+    input_path = f"{MEDIA_FOLDER}/{file.filename}"
+
+    docker = ["docker", "exec", "docker-ffmpeg"]
+    if docker:
+        command = docker + [ "ffprobe", "-v", "error", "-select_streams", "v:a", "-show_entries", "stream=index", "-of", "json", input_path] 
+        try:
+            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+
+            metadata = json.loads(result.stdout)
+            tracks = metadata.get("streams", [])  # List of all tracks
+
+            return { "status": "success","track_count": len(tracks)}
+
+        except subprocess.CalledProcessError as e:
+            return {"status": "error", "message": str(e)}
+
+@app.post("/motion-vectors/")
+def motion_vectors(file: UploadFile):
+
+    input_path = f"{MEDIA_FOLDER}/{file.filename}"
+    output_path = f"{MEDIA_FOLDER}/macroblocks_{file.filename}"
+
+    docker = ["docker", "exec", "docker-ffmpeg"]
+    if docker:
+        command = docker + ["ffmpeg", "-flags2", "+export_mvs", "-i", input_path, "-vf", "codecview=mv=pf+bf+bb", output_path]
+        try:
+            subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+
+            return { "status": "success", "output_video": output_path,}
+
+        except subprocess.CalledProcessError as e:
+            return {"status": "error", "message": str(e)}
+        
+
+@app.post("/histogram_YUV/")
+def histogram_YUV(file: UploadFile):
+
+    input_path = f"{MEDIA_FOLDER}/{file.filename}"
+    output_path = f"{MEDIA_FOLDER}/yuvhistogram_{file.filename}"
+
+    docker = ["docker", "exec", "docker-ffmpeg"]
+    if docker:
+        command =  docker + [ "ffmpeg", "-i", input_path, "-vf", "split[main][copy];[copy]histogram,format=yuv420p[hist];[main][hist]overlay",
+            "-c:v", "libx264", output_path]
+        try:
+            subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+
+            return { "status": "success", "output_video": output_path,}
+
+        except subprocess.CalledProcessError as e:
+            return {"status": "error", "message": str(e)}
