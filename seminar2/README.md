@@ -1,20 +1,12 @@
-# Practice 1. API & DOCKERIZATION
+# Seminar 2. MPEG4 & more Endpoints
 
 This is a brief manual on how we have performed each task of the practice and the steps to follow to prove its functionality.
 
 **1.Create a new endpoint/feature which will let you to modify the resolution (use FFmpeg in the backend).**
 
-To do this practice we will use the previous practice 1. In this exercice we will use the already created function resize_image with some modifications in order to work.
+To do this practice we will start from the previous practice 1. In this exercice we will use the already created function resize_image, defined in the main.py file in the api folder, with some modifications in order to work.
+Then, what we have to do is simply enter the new resolution we want our video to have (defined by its pixel size) and upload the video.
 
-Here we will **create** a virtual environment:
-
-*> python -m venv .venv*
-
-And then **activate** it:
-
-*> .venv\Scripts\activate (windows, PowerShell)*
-
-*> source .venv/bin/activate (linux)*
 
 **2. Put ffmpeg inside a Docker**
 We create a new dockerfile called Dockerfile_ffmpeg. We get ffmpeg from *jrottenberg/ffmpeg:latest*, which already prepares a minimalist Docker image with FFmpeg. As we will need to run continuously this docker in the background (to be able to call the functions that depend on it), we add a command to do so. We also add the directory of the media folder, which will be shared with the api docker and will be used to store the media we will use. 
