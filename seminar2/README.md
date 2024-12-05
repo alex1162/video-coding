@@ -7,37 +7,31 @@ This is a brief manual on how we have performed each task of the practice and th
 To do this practice we will start from the previous practice 1. In this exercice we will use the already created function resize_image, defined in the main.py file in the api folder, with some modifications in order to work.
 Then, what we have to do is simply enter the new resolution we want our video to have (defined by its pixel size) and upload the video.
 
-
 **2. Create a new endpoint / feature which will let you to modify the chroma subsampling**
 
-From now on, we will create and implement the endpoints in the main file. To modify the chroma subsampling, we use the ffmpeg command: "(no me'n recordo, dsp el poso)". We modify the command using the entered numbers by the user. 
-
+From now on, we will create and implement the endpoints in the main file. To modify the chroma subsampling, we use the ffmpeg command: 
+"'ffmpeg', '-i', input_path, '-c:v', 'libx264', '-vf', f'format=yuv{Y}{Cb}{Cr}p', output_path ". 
+We modify the command using the entered numbers by the user which is sgoing to be the luma component(Y) and the color components Cb and Cr.
 
 **3. Create a new endpoint / feature which lets you read the video info and print at least 5 relevant data from the video**
 
-
+To do an endpoint with that reads the information of the video and print 5 relevant data we had to use FFMPEG's ffprobe tool in order to extract the data. 
+The command ffprobe analyze the video file and retrieve data in JSON format. Then we extract elevant information: the duration(s), the file Size (bytes), the bitrate (average bits per second), the resolution (width x height) and the frame rate (frames per second).
 
 **4. Create another endpoint in order to create a new BBB container and fulfill the specified requirements**
 
-· Cut BBB into 20 seconds only video.
-· Export BBB(20s) audio as AAC mono track.
-· Export BBB(20s) audio in MP3 stereo w/ lower bitrate
-· Export BBB(20s) audio in AC3 codec
-Now package everything in a .mp4 with FFMPEG
+To meet the requirements, we have implemented an endpoint in FastAPI. This endpoint processes an uploaded video file to create a 20-second MP4 container with multiple audio tracks.
+First we cut the video to 20 seconds. Then we export the audio as AAC mono, MP3 stereo and the AC3 codec tracks. Finally we package everything in the trimmed video as a single MP4 file.
 
 **5. Create a new endpoint / feature which reads the tracks from an MP4 container, and it’s able to say (deliver an output) of how many tracks does the container contains**
 
 
 
-**6. Create a new endpoint / feature which reads the tracks from an MP4 container, and it’s able 
-to say (deliver an output) of how many tracks does the container contains**
+**6. Create a new endpoint / feature which will output a video that will show the macroblocks and the motion vectors**
 
 
 
-
-**7. Create a new endpoint / feature which reads the tracks from an MP4 container, and it’s able 
-to say (deliver an output) of how many tracks does the container contains**
-
+**7. Create a new endpoint / feature which will output a video that will show the YUV histogram**
 
 
 

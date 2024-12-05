@@ -62,7 +62,7 @@ async def resize_image(file: UploadFile, width: int, height: int):
 @app.post("/modify-chroma-subsampling/")
 def modify_chroma_subsampling(file: UploadFile, Y: int, Cb: int, Cr: int):
     input_path = f"{MEDIA_FOLDER}/{file.filename}"
-    output_path = f"{MEDIA_FOLDER}/resized_{file.filename}"
+    output_path = f"{MEDIA_FOLDER}/chroma_{file.filename}"
 
     docker = ["docker", "exec", "docker-ffmpeg"]
     if docker:
@@ -70,10 +70,10 @@ def modify_chroma_subsampling(file: UploadFile, Y: int, Cb: int, Cr: int):
         command = docker + ['ffmpeg', '-i', input_path, '-c:v', 'libx264', '-vf', f'format=yuv{Y}{Cb}{Cr}p', output_path]
         try:
             result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            print(f"Image resized and saved as {output_path}")
+            print(f"Image saved as {output_path}")
             return result.stdout, result.stderr
         except subprocess.CalledProcessError as e:
-            print(f"Failed to resize image: {e}")
+            print(f"Failed to chroma image: {e}")
     else:
         # If no docker is provided, run ffmpeg directly
         command = ['ffmpeg', '-i', input_path, '-c:v', 'libx264', '-vf', f'format={Y}{Cb}{Cr}p', output_path]
