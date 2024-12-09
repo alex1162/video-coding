@@ -1,0 +1,9 @@
+numpy
+Pillow                          # PIL
+opencv-python-headless          # cv2
+PyWavelets                      # pywt
+# fastapi
+fastapi[standard]               # fastapi second option
+uvicorn
+python-multipart
+ffmpeg
