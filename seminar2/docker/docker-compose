@@ -1,0 +1,22 @@
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile_api
+    container_name: docker-api
+    volumes:
+      - ../api:/app/api  # mounting API folder
+      - ../media:/media  # media storage, shared folder for communication
+      - /var/run/docker.sock:/var/run/docker.sock # for communicating with ffmpeg
+    ports:
+      - "8000:8000"  # exposing API on localhost:8000
+    depends_on:
+      - ffmpeg
+
+  ffmpeg:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile_ffmpeg
+    container_name: docker-ffmpeg
+    volumes:
+      - ../media:/media  # media storage, shared folder for communication
