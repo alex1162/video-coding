@@ -203,8 +203,7 @@ def histogram_YUV(file: UploadFile):
 
 @app.post("/convert-video/")
 def convert_video(file: UploadFile):
-
-	formats = ["vp8", "vp9", "h265", "av1"]
+    formats = ["vp8", "vp9", "h265", "av1"]
     
     input_path = f"{MEDIA_FOLDER}/{file.filename}"
     
@@ -217,26 +216,49 @@ def convert_video(file: UploadFile):
     
     docker = ["docker", "exec", "docker-ffmpeg"]
     
-    if not docker:
-        return {"status": "error", "message": "Docker is not available or not configured properly."}
-    
-    commands = {
-    	"vp8": docker + [ "ffmpeg", "-i", input_path, "-c:v", "libvpx", "-b:v", "1M", "-c:a", "libvorbis", paths["vp8"]],
-		"vp9": docker + [ "ffmpeg", "-i", input_path, "-c:v", "libvpx-vp9", "-b:v", "2M", paths["vp9"]],
-		"h265": docker + [ "ffmpeg", "-i", input_path, "-c:v", "libx265", "-crf", "26", "-preset fast", "-c:a", "aac", "-b:a", "128k", paths["h265"]],
-		"av1": docker + ["ffmpeg", "-i", input_path, "-c:v", "libaom-av1", "-crf", "30", paths["av1"]],
-    }
-    
-    converted_video = {}
-    for f in formats:
-    	if f in commands:        
-		    try:
-		        subprocess.run(commands[f], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-		        converted_video[f] = paths[f]         
+    if  docker:
+        commands = {
+            "vp8": docker + [ "ffmpeg", "-i", input_path, "-c:v", "libvpx", "-b:v", "1M", "-c:a", "libvorbis", paths["vp8"]],
+            "vp9": docker + [ "ffmpeg", "-i", input_path, "-c:v", "libvpx-vp9", "-b:v", "2M", paths["vp9"]],
+            "h265": docker + [ "ffmpeg", "-i", input_path, "-c:v", "libx265", "-crf", "26", "-preset fast", "-c:a", "aac", "-b:a", "128k", paths["h265"]],
+            "av1": docker + ["ffmpeg", "-i", input_path, "-c:v", "libaom-av1", "-crf", "30", paths["av1"]],
+        }
+        
+        converted_video = {}
+              
+        try:
+            subprocess.run(commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+            converted_video = paths         
+            return {"status": "success", "converted_video": converted_video}
 
         except subprocess.CalledProcessError as e:
             return {"status": "error", "message": str(e)}
-    
-	return {"status": "success", "converted_video": converted_video}
+ 
+@app.post("/process-bbb/")
+def process_bbb(file: UploadFile):
 
+   
+    input_path = f"{MEDIA_FOLDER}/{file.filename}" 
+    vp8_path = f"{MEDIA_FOLDER}/vp8_{file.filename}"
+    vp9_path = f"{MEDIA_FOLDER}/vp9_{file.filename}"
+    h265_path = f"{MEDIA_FOLDER}/h265_{file.filename}"
+    av1_path = f"{MEDIA_FOLDER}/av1_{file.filename}"
 
+    docker = ["docker", "exec", "docker-ffmpeg"]
+    if docker:
+
+        vp8_command =  docker + [ "ffmpeg", "-i", input_path, "-c:v", "libvpx", "-b:v", "1M", "-c:a", "libvorbis",vp8_path],
+        vp9_command =  docker + [ "ffmpeg", "-i", input_path, "-c:v", "libvpx-vp9", "-b:v", "2M", vp9_path],
+        h265_command =  docker + [ "ffmpeg", "-i", input_path, "-c:v", "libx265", "-crf", "26", "-preset fast", "-c:a", "aac", "-b:a", "128k", h265_path],
+        av1_command =  docker + ["ffmpeg", "-i", input_path, "-c:v", "libaom-av1", "-crf", "30", av1_path],
+        
+        try:
+            subprocess.run(vp8_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+            subprocess.run(vp9_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+            subprocess.run(h265_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+            subprocess.run(av1_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+
+            return {"status": "success", "av1": av1_command }
+
+        except subprocess.CalledProcessError as e:
+            return {"status": "error", "message": str(e)}
