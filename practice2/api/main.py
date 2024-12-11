@@ -19,7 +19,7 @@ def home():
             <title>Home</title>
         </head>
         <body>
-            <h1>Seminar2 - MPEPG4 and more endpoints</h1>
+            <h1>Practice2 - MPEPG4 and more endpoints</h1>
             <p> To test the endpoints implemented, go to the API docs page:</p>
             <button onclick="window.location.href='/docs';">Go</button>
         </body>
@@ -202,31 +202,29 @@ def histogram_YUV(file: UploadFile):
             return {"status": "error", "message": str(e)}
 
 @app.post("/convert-video/")
- 
 def convert_videos(file: UploadFile):
-
-   
+       
     input_path = f"{MEDIA_FOLDER}/{file.filename}" 
-    vp8_path = f"{MEDIA_FOLDER}/vp8_{file.filename}"
-    vp9_path = f"{MEDIA_FOLDER}/vp9_{file.filename}"
-    h265_path = f"{MEDIA_FOLDER}/h265_{file.filename}"
-    av1_path = f"{MEDIA_FOLDER}/av1_{file.filename}"
+    vp8_path = f"{MEDIA_FOLDER}/vp8.webm"
+    vp9_path = f"{MEDIA_FOLDER}/vp9.webm"
+    h265_path = f"{MEDIA_FOLDER}/h265.mp4"
+    av1_path = f"{MEDIA_FOLDER}/av1.mkv"
 
     docker = ["docker", "exec", "docker-ffmpeg"]
     if docker:
 
-        vp8_command =  docker + [ "ffmpeg", "-i", input_path, "-c:v", "libvpx", "-b:v", "1M", "-c:a", "libvorbis",vp8_path],
-        vp9_command =  docker + [ "ffmpeg", "-i", input_path, "-c:v", "libvpx-vp9", "-b:v", "2M", vp9_path],
-        h265_command =  docker + [ "ffmpeg", "-i", input_path, "-c:v", "libx265", "-crf", "26", "-preset fast", "-c:a", "aac", "-b:a", "128k", h265_path],
-        av1_command =  docker + ["ffmpeg", "-i", input_path, "-c:v", "libaom-av1", "-crf", "30", av1_path],
+        vp8_command =  docker + ["ffmpeg", "-i", input_path, "-c:v", "libvpx", "-b:v", "1M", "-c:a", "libvorbis", vp8_path]
+        vp9_command =  docker + ["ffmpeg", "-i", input_path, "-c:v", "libvpx-vp9", "-b:v", "2M", vp9_path]
+        h265_command =  docker + ["ffmpeg", "-i", input_path, "-c:v", "libx265", "-preset", "fast", "-c:a", "aac", "-b:a", "128k", h265_path]
+        av1_command =  docker + ["ffmpeg", "-i", input_path, "-c:v", "libaom-av1", "-crf", "30", av1_path]
+
+        # "-b:v", "2M"(ultim)
         
-        try:
-            subprocess.run(vp8_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-            subprocess.run(vp9_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-            subprocess.run(h265_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-            subprocess.run(av1_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+        subprocess.run(vp8_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text= True)
+        subprocess.run(vp9_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+        subprocess.run(h265_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+        subprocess.run(av1_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
 
-            return {"status": "success", "av1": av1_command }
+        return {"status": "success", "av1": av1_command }
 
-        except subprocess.CalledProcessError as e:
-            return {"status": "error", "message": str(e)}
+# An encoding ladder is a predefined set of video output specifications designed to accommodate users with varying devices and network conditions.
