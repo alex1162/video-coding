@@ -241,4 +241,25 @@ def convert_videos(file: UploadFile):
             return {"status": "error", "message": str(e)}
 
 
-# An encoding ladder is a predefined set of video output specifications designed to accommodate users with varying devices and network conditions.  
+# An encoding ladder is a predefined set of video output specifications designed to accommodate users with varying devices and network conditions.
+@app.post("/encoding-ladder/")
+def encoding_ladder(file: UploadFile, resolution: str = "1280x720", bitrate: str = "1M"): #resolution (e.g. 1280x720) and the bitrate (e.g. 2500k)
+	
+	input_path = f"{MEDIA_FOLDER}/{file.filename}"
+	output_path = f"{MEDIA_FOLDER}/{resolution}.mp4"
+
+	docker = ["docker", "exec", "docker-ffmpeg"]
+
+
+	if docker:
+		try:
+			#apply the encoding ladder to accomodate the conditions specified of the user
+			EL_command = docker + ["ffmpeg", "-i", input_path, "-vf", f"scale={resolution}", "-b:v", bitrate, "-c:v", "libx264",  "-preset", "fast", "-c:a", "aac", "-b:a", "128k", output_path]
+			subprocess.run(EL_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
+
+			return {"status": "success", "encoded_ladder": output_path}
+
+		except subprocess.CalledProcessError as e:
+			return {"status": "error", "message": str(e)}
+
+
