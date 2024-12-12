@@ -216,15 +216,16 @@ def convert_videos(file: UploadFile):
         vp8_command =  docker + ["ffmpeg", "-i", input_path, "-c:v", "libvpx", "-b:v", "1M", "-c:a", "libvorbis", vp8_path]
         vp9_command =  docker + ["ffmpeg", "-i", input_path, "-c:v", "libvpx-vp9", "-b:v", "2M", vp9_path]
         h265_command =  docker + ["ffmpeg", "-i", input_path, "-c:v", "libx265", "-crf", "26", "-preset", "fast", "-c:a", "aac", "-b:a", "128k", h265_path]
-        av1_command =  docker + ["ffmpeg", "-i", input_path, "-c:v", "libaom-av1", "-b:v", "2M", av1_path]
+        #av1_command =  docker + ["ffmpeg", "-i", input_path, "-c:v", "libaom-av1", "-b:v", "2M", av1_path]
+        av1_command = docker + ["ffmpeg", "-i", input_path,"-c:v", "libaom-av1", "-b:v", "2M", av1_path]
 
-        # ffmpeg -i input -c:v libx265 -crf 26 -preset fast -c:a aac -b:a 128k output.mp4
-        
+
         subprocess.run(vp8_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text= True)
         subprocess.run(vp9_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
         subprocess.run(h265_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
         subprocess.run(av1_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
 
-        return {"status": "success", "av1": av1_command }
+        return {"status": "success"}
+
 
 # An encoding ladder is a predefined set of video output specifications designed to accommodate users with varying devices and network conditions.
