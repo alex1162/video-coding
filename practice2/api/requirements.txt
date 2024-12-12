@@ -7,3 +7,4 @@ fastapi[standard]               # fastapi second option
 uvicorn
 python-multipart
 ffmpeg
+streamlit

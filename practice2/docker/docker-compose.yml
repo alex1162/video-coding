@@ -20,3 +20,16 @@ services:
     container_name: docker-ffmpeg
     volumes:
       - ../media:/media  # media storage, shared folder for communication
+
+  streamlit:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile_streamlit  # Add Dockerfile for streamlit if needed
+    container_name: docker-streamlit
+    volumes:
+      - ../api:/app/api  # Mount Streamlit app folder
+      - ../media:/media  # Media storage, shared folder
+    ports:
+      - "8501:8501"  # Expose Streamlit on localhost:8501
+    depends_on:
+      - api
