@@ -18,6 +18,7 @@ The AV1 format has been the one which we have had more problems. There are curre
 The main problem we had was that as we were using an older than version 2.0.0 of libaom, we need to add as well *-strict -2*, which we didn't know.
 
 **2. Create a new endpoint/feature to be able to do an encoding ladder.**
+We have created a new endpoint, similar to the previous one, using the ffmpeg command to do so. For this endpoint we allow the user to enter the resolution and bitrate of the ouput video.
 
 **3. Create a GUI.**
 
@@ -30,6 +31,11 @@ To run the application, use the following command in your terminal:
 
 The first endpoint allows you to convert an image to Black & White. After selecting an image, the app displays the original image. Once you apply the Black & White transformation, the new image is saved to the output path.
 The second endpoint works with videos. You start by selecting a video, which is then displayed in the app. After processing, the video with the YUV histogram overlay is saved to your output path.
+
+We tried modifying the docker compose and creating a new docker for streamlit, but after doing that, we have found some problems making the ffmpeg docker and the streamlit communicate. Hence, due to time constrains we have opted on skipping this implementation and running the GUI on streamlit separately.
+
+**4. Improving our code with AI**
+We have created a new file called test_GUI.py which has unit tests for the GUI.py file. We have also thought on enhancing our GUI adding more endpoints but we haven't had time. We used AI to reduce lines on our code for the GUI and unit tests.
 
 ----------------------------------------------------------------
 

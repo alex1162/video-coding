@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile
 from fastapi.responses import HTMLResponse
-from api.first_seminar import Color, DCT, DWT
+from .first_seminar import Color, DCT, DWT
 import subprocess
 import json
 import os
