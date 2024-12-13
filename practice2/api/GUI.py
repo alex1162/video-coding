@@ -2,49 +2,55 @@ import streamlit as st
 import requests
 from PIL import Image
 import io
+import asyncio
+
 
 # Base URL of your FastAPI
 API_URL = "http://127.0.0.1:8000"
 
 st.set_page_config(page_title="Monster API GUI", layout="centered")
 
-st.title("Monster API GUI")
-st.write("Upload an image to apply transformations.")
+st.title("API GUI")
+st.write("Upload an image to apply transformation.")
 
 # File uploader
 uploaded_file = st.file_uploader("Choose an image file", type=["png", "jpg", "jpeg"])
 
-# Input fields for resizing
-resize_width = st.number_input("Width (px)", min_value=1, value=200)
-resize_height = st.number_input("Height (px)", min_value=1, value=200)
-
 if uploaded_file:
     # Display the uploaded image
-    st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
+    st.image(uploaded_file, use_column_width=True)
 
     # Convert to Black & White button
     if st.button("Convert to Black & White"):
         # Send the image to the FastAPI backend
         files = {"file": uploaded_file}
         response = requests.post(f"{API_URL}/bw-image/", files=files)
-        
+        files = {"file": (uploaded_file.name, uploaded_file.getvalue())}
+
         if response.status_code == 200:
             output_file = response.json()["output_file"]
+            st.write(f"Image in the file path: {output_file}")
             st.success("Image converted to Black & White!")
-            st.image(output_file, caption="Black & White Image")
         else:
             st.error("Failed to process the image. Please try again.")
 
-    # Resize image button
-    if st.button("Resize Image"):
-        # Send the image and resize dimensions to the FastAPI backend
-        files = {"file": uploaded_file}
-        data = {"width": resize_width, "height": resize_height}
-        response = requests.post(f"{API_URL}/resize-image/", files=files, data=data)
-        
+# Video Information
+st.header("Video Metadata Extraction")
+video_file = st.file_uploader("Upload a Video for Metadata")
+
+if video_file:
+
+    st.video(video_file, format="video/mp4")
+
+    if st.button("Generate YUV Histogram"):
+        st.write("This might take a few seconds...")
+        files = {"file": video_file}
+        response = requests.post(f"{API_URL}/histogram_YUV/", files=files)
+
         if response.status_code == 200:
-            output_file = response.json()["output_file"]
-            st.success("Image resized successfully!")
-            st.image(output_file, caption="Resized Image")
+            response_data = response.json()
+            output_video = response_data["output_video"]
+            st.success("YUV Histogram generated successfully!")
+            st.write(f"Video in the file path: {output_video}")
         else:
-            st.error("Failed to resize the image. Please try again.")
+            st.error("Failed to connect to the server. Please try again.")
