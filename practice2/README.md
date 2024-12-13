@@ -21,6 +21,16 @@ The main problem we had was that as we were using an older than version 2.0.0 of
 
 **3. Create a GUI.**
 
+In this case, we chose to use a Streamlit app because one of our group members had prior experience with it in another subject, which made it easier to work with. We implemented two of the endpoints we had already created into the app.
+
+To install streamil we use:
+pip install streamlit
+To run the application, use the following command in your terminal:
+*>streamlit run GUI.py
+
+The first endpoint allows you to convert an image to Black & White. After selecting an image, the app displays the original image. Once you apply the Black & White transformation, the new image is saved to the output path.
+The second endpoint works with videos. You start by selecting a video, which is then displayed in the app. After processing, the video with the YUV histogram overlay is saved to your output path.
+
 ----------------------------------------------------------------
 
 To launch the application, after activating the virtual environment (*.venv\Scripts\activate*) and opening the docker desktop app (without closing it), we run the following command to build the docker-compose file inside the docker folder: 

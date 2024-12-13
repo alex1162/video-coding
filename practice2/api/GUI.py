@@ -1,14 +1,11 @@
 import streamlit as st
 import requests
 from PIL import Image
-import io
-import asyncio
 
-
-# Base URL of your FastAPI
+#URL of FastAPI
 API_URL = "http://127.0.0.1:8000"
 
-st.set_page_config(page_title="Monster API GUI", layout="centered")
+st.set_page_config(page_title="API GUI", layout="centered")
 
 st.title("API GUI")
 st.write("Upload an image to apply transformation.")
